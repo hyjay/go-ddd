@@ -27,6 +27,10 @@ func (u *User) Read(f func(id UserID, email string, hashedPassword string, first
 	f(u.id, u.email, u.hashedPassword, u.firstName, u.lastName)
 }
 
+func (u *User) ID() UserID {
+	return u.id
+}
+
 type UserSignedUpEvent struct {
 	UserID    UserID    `json:"user_id"`
 	Email     string    `json:"email"`
