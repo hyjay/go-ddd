@@ -12,3 +12,43 @@ database/RPC/etc at a low infrastructure level.
     And the implementation, `bcrypt.PasswordHashService`, is at the port/adapter layer.
 - Mocks and test suites are auto-generated code by [mockery](https://github.com/vektra/mockery) and `go-suiteup` tweaked 
 from `mockery` by myself.
+
+## Test
+`go test ./...`
+
+## Run
+`go run cmd/server/server.go`
+
+## API examples
+```
+SignupUser
+
+Path: /v1/users
+Content-Type: application/json
+Example request body:
+{
+	"email": "john@gmail.com",
+	"password": "PASSWORD",
+	"first_name": "John",
+	"last_name": "Doe",
+	"password": "asdf"
+}
+Example response body:
+{
+    "id": "SOME_RANDOM_UUID",
+    "email": "john@gmail.com",
+    "first_name": "John",
+    "last_name": "Doe"
+}
+
+GetUser
+
+Path: /v1/users/{user_id}
+Example response body:
+{
+    "id": "SOME_RANDOM_UUID",
+    "email": "john@gmail.com",
+    "first_name": "John",
+    "last_name": "Doe"
+}
+```
