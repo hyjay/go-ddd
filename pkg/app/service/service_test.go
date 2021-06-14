@@ -70,6 +70,23 @@ func (s *ServiceTestSuite) TestSignup() {
 	})
 }
 
+func (s *ServiceTestSuite) TestGetUser() {
+	userEntity := &domain.User{}
+	userEntity.Write(domain.UserID(s.fixedUserID), s.fixedEmail, "", s.fixedFirstName, s.fixedLastName)
+	s.mockUserRepository.On("GetByID", mock.Anything, domain.UserID(s.fixedUserID)).
+		Return(userEntity, nil)
+
+	s.serve(http.MethodGet, fmt.Sprint("/v1/users/", s.fixedUserID), nil)
+
+	s.Equal(200, s.responseRecorder.Code)
+	s.equalResponse(&user{
+		ID:        s.fixedUserID,
+		Email:     s.fixedEmail,
+		FirstName: s.fixedFirstName,
+		LastName:  s.fixedLastName,
+	})
+}
+
 func (s *ServiceTestSuite) SetupTest() {
 	s.container = restful.NewContainer()
 	s.mockUserRepository = new(domainmocks.UserRepository)

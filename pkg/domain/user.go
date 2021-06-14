@@ -45,4 +45,5 @@ func (e *UserSignedUpEvent) Name() string {
 
 type UserRepository interface {
 	Save(ctx context.Context, user *User) error
+	GetByID(ctx context.Context, id UserID) (*User, error)
 }

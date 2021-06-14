@@ -2,9 +2,14 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/emicklei/go-restful"
 	"github.com/hyjay/go-ddd/pkg/domain"
 	"net/http"
+)
+
+const (
+	userIDParameter = "user_id"
 )
 
 type PasswordHashService interface {
@@ -38,6 +43,10 @@ func (s *Service) Register(container *restful.Container) {
 			To(s.signup).
 			Reads(user{}).
 			Writes(user{}))
+	service.Route(
+		service.GET(fmt.Sprintf("{%s}", userIDParameter)).
+			To(s.getUser).
+			Writes(user{}))
 
 	container.Add(service)
 }
@@ -56,6 +65,20 @@ func (s *Service) signup(request *restful.Request, response *restful.Response) {
 	}
 	userEntity := makeUserEntity(user, "SOME_RANDOM_UUID", hashedPassword)
 	if err := s.userRepository.Save(ctx, userEntity); err != nil {
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	if err := response.WriteEntity(makeUserResource(userEntity)); err != nil {
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+}
+
+func (s *Service) getUser(request *restful.Request, response *restful.Response) {
+	ctx := request.Request.Context()
+	userID := request.PathParameter(userIDParameter)
+	userEntity, err := s.userRepository.GetByID(ctx, domain.UserID(userID))
+	if err != nil {
 		response.WriteError(http.StatusInternalServerError, err)
 		return
 	}
