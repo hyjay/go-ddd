@@ -4,7 +4,7 @@ import (
 	"cloud.google.com/go/pubsub"
 	"context"
 	"encoding/json"
-	"github.com/hyjay/go-ddd/pkg/kit"
+	"github.com/hyjay/go-ddd/internal/kit"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )

@@ -2,7 +2,7 @@ package pubsub
 
 import (
 	"fmt"
-	"github.com/hyjay/go-ddd/pkg/kit"
+	"github.com/hyjay/go-ddd/internal/kit"
 )
 
 type TopicScheme struct {

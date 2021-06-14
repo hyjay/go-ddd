@@ -3,7 +3,7 @@ package pubsub
 import (
 	"cloud.google.com/go/pubsub"
 	"context"
-	"github.com/hyjay/go-ddd/pkg/kit"
+	"github.com/hyjay/go-ddd/internal/kit"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
