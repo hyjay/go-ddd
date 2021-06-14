@@ -8,3 +8,7 @@ The project is about to demonstrate a few points:
 - The code design follows the principles of [Clean Architecture(or Hexagonal architecture)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) focused in
 separating each concern of pure domain/business logic, non-functional requirements such as monitoring/logging/etc, and implementations of 
 database/RPC/etc at a low infrastructure level.
+    - For example, `service.PasswordHashService` at the application layer abstracts how it encrypts plain passwords in which algorithm.
+    And the implementation, `bcrypt.PasswordHashService`, is at the port/adapter layer.
+- Mocks and test suites are auto-generated code by [mockery](https://github.com/vektra/mockery) and `go-suiteup` tweaked 
+from `mockery` by myself.
