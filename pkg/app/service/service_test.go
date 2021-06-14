@@ -53,13 +53,11 @@ func (s *ServiceTestSuite) TestSignup() {
 	})).
 		Return(nil)
 
-	request := &signupRequest{
-		User: &user{
-			Email:     s.fixedEmail,
-			Password:  s.fixedPassword,
-			FirstName: s.fixedFirstName,
-			LastName:  s.fixedLastName,
-		},
+	request := &user{
+		Email:     s.fixedEmail,
+		Password:  s.fixedPassword,
+		FirstName: s.fixedFirstName,
+		LastName:  s.fixedLastName,
 	}
 	s.serve(http.MethodPost, "/v1/users", request)
 

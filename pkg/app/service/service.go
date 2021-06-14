@@ -28,10 +28,6 @@ type user struct {
 	LastName  string `json:"last_name"`
 }
 
-type signupRequest struct {
-	User *user `json:"user"`
-}
-
 func (s *Service) Register(container *restful.Container) {
 	service := &restful.WebService{}
 	service.Path("/v1/users").
@@ -40,7 +36,7 @@ func (s *Service) Register(container *restful.Container) {
 	service.Route(
 		service.POST("").
 			To(s.signup).
-			Reads(signupRequest{}).
+			Reads(user{}).
 			Writes(user{}))
 
 	container.Add(service)
@@ -48,18 +44,17 @@ func (s *Service) Register(container *restful.Container) {
 
 func (s *Service) signup(request *restful.Request, response *restful.Response) {
 	ctx := request.Request.Context()
-	signupRequest := &signupRequest{}
-	if err := request.ReadEntity(signupRequest); err != nil {
+	user := &user{}
+	if err := request.ReadEntity(user); err != nil {
 		response.WriteError(http.StatusBadRequest, err)
 		return
 	}
-	userResource := signupRequest.User
-	hashedPassword, err := s.passwordHashService.HashPassword(ctx, userResource.Password)
+	hashedPassword, err := s.passwordHashService.HashPassword(ctx, user.Password)
 	if err != nil {
 		response.WriteError(http.StatusInternalServerError, err)
 		return
 	}
-	userEntity := makeUserEntity(signupRequest.User, "SOME_RANDOM_UUID", hashedPassword)
+	userEntity := makeUserEntity(user, "SOME_RANDOM_UUID", hashedPassword)
 	if err := s.userRepository.Save(ctx, userEntity); err != nil {
 		response.WriteError(http.StatusInternalServerError, err)
 		return
