@@ -31,6 +31,18 @@ func (u *User) ID() UserID {
 	return u.id
 }
 
+func (u *User) Email() string {
+	return u.email
+}
+
+func (u *User) FirstName() string {
+	return u.firstName
+}
+
+func (u *User) LastName() string {
+	return u.lastName
+}
+
 type UserSignedUpEvent struct {
 	UserID    UserID    `json:"user_id"`
 	Email     string    `json:"email"`

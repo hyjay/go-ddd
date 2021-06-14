@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/emicklei/go-restful"
+	"github.com/hyjay/go-ddd/internal/kit"
 	"github.com/hyjay/go-ddd/pkg/domain"
 	"net/http"
+	"time"
 )
 
 const (
@@ -17,12 +19,13 @@ type PasswordHashService interface {
 }
 
 type Service struct {
-	userRepository      domain.UserRepository
-	passwordHashService PasswordHashService
+	userRepository       domain.UserRepository
+	passwordHashService  PasswordHashService
+	domainEventPublisher kit.DomainEventPublisher
 }
 
-func NewService(userRepository domain.UserRepository, passwordHashService PasswordHashService) *Service {
-	return &Service{userRepository: userRepository, passwordHashService: passwordHashService}
+func NewService(userRepository domain.UserRepository, passwordHashService PasswordHashService, domainEventPublisher kit.DomainEventPublisher) *Service {
+	return &Service{userRepository: userRepository, passwordHashService: passwordHashService, domainEventPublisher: domainEventPublisher}
 }
 
 type user struct {
@@ -63,11 +66,19 @@ func (s *Service) signup(request *restful.Request, response *restful.Response) {
 		response.WriteError(http.StatusInternalServerError, err)
 		return
 	}
-	userEntity := makeUserEntity(user, "SOME_RANDOM_UUID", hashedPassword)
+	userID := "SOME_RANDOM_UUID"
+	userEntity := makeUserEntity(user, domain.UserID(userID), hashedPassword)
 	if err := s.userRepository.Save(ctx, userEntity); err != nil {
 		response.WriteError(http.StatusInternalServerError, err)
 		return
 	}
+	s.domainEventPublisher.Publish(ctx, &domain.UserSignedUpEvent{
+		UserID:    domain.UserID(userID),
+		Email:     userEntity.Email(),
+		FirstName: userEntity.FirstName(),
+		LastName:  userEntity.LastName(),
+		Timestamp: time.Now(),
+	})
 	if err := response.WriteEntity(makeUserResource(userEntity)); err != nil {
 		response.WriteError(http.StatusInternalServerError, err)
 		return

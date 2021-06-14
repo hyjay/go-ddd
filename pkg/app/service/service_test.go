@@ -5,26 +5,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/emicklei/go-restful"
+	"github.com/hyjay/go-ddd/internal/kit/fakes"
 	"github.com/hyjay/go-ddd/pkg/app/service/mocks"
 	"github.com/hyjay/go-ddd/pkg/domain"
 	domainmocks "github.com/hyjay/go-ddd/pkg/domain/mocks"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
-
-	"github.com/stretchr/testify/suite"
 )
 
 type ServiceTestSuite struct {
 	suite.Suite
 
-	service                 *Service
-	mockUserRepository      *domainmocks.UserRepository
-	mockPasswordHashService *mocks.PasswordHashService
-	container               *restful.Container
-	responseRecorder        *httptest.ResponseRecorder
+	service                  *Service
+	mockUserRepository       *domainmocks.UserRepository
+	mockPasswordHashService  *mocks.PasswordHashService
+	fakeDomainEventPublisher *fakes.DomainEventPublisher
+	container                *restful.Container
+	responseRecorder         *httptest.ResponseRecorder
 
 	fixedUserID         string
 	fixedEmail          string
@@ -68,6 +69,9 @@ func (s *ServiceTestSuite) TestSignup() {
 		FirstName: s.fixedFirstName,
 		LastName:  s.fixedLastName,
 	})
+	s.Len(s.fakeDomainEventPublisher.PublishedEvents(), 1)
+	userSignedUpEvent := s.fakeDomainEventPublisher.PublishedEvents()[0].(*domain.UserSignedUpEvent)
+	s.Equal(domain.UserID(s.fixedUserID), userSignedUpEvent.UserID)
 }
 
 func (s *ServiceTestSuite) TestGetUser() {
@@ -91,7 +95,8 @@ func (s *ServiceTestSuite) SetupTest() {
 	s.container = restful.NewContainer()
 	s.mockUserRepository = new(domainmocks.UserRepository)
 	s.mockPasswordHashService = new(mocks.PasswordHashService)
-	s.service = NewService(s.mockUserRepository, s.mockPasswordHashService)
+	s.fakeDomainEventPublisher = fakes.NewDomainEventPublisher()
+	s.service = NewService(s.mockUserRepository, s.mockPasswordHashService, s.fakeDomainEventPublisher)
 	s.service.Register(s.container)
 
 	s.responseRecorder = httptest.NewRecorder()

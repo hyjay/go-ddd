@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/emicklei/go-restful"
+	"github.com/hyjay/go-ddd/internal/kit/port/google/pubsub"
 	"github.com/hyjay/go-ddd/pkg/app/service"
 	"github.com/hyjay/go-ddd/pkg/domain/fakes"
 	"github.com/hyjay/go-ddd/pkg/port/bcrypt"
@@ -15,12 +16,21 @@ var (
 )
 
 func main() {
+	localPubSubServer := pubsub.NewLocalPubSubServer()
+	pubsubClient, err := localPubSubServer.CreateClient()
+	if err != nil {
+		logrus.WithError(err).Fatalf("error in creating a Pub/Sub client")
+	}
+	topicRepository := pubsub.NewTopicRepository(pubsubClient)
+	topicScheme := pubsub.NewTopicScheme("account", "v1")
+	domainEventPublisher := pubsub.NewDomainEventPublisher(topicScheme, topicRepository)
+
 	userRepository := fakes.NewUserRepository()
 	passwordHashService := bcrypt.NewPasswordHashService()
 
 	container := restful.NewContainer()
 	container.EnableContentEncoding(true)
-	svc := service.NewService(userRepository, passwordHashService)
+	svc := service.NewService(userRepository, passwordHashService, domainEventPublisher)
 	svc.Register(container)
 
 	runHTTPServer(container)
